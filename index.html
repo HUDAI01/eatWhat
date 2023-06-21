@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+  <title>今天吃什么？</title>
+  <script src="https://unpkg.com/dayjs"></script>
+  <script src="https://unpkg.com/lib-flexible"></script>
+</head>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#add-dish {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#add-dish>button {
+    margin-top: 0;
+}
+
+#new-dish {
+    margin-right: 10px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+h3 {
+    margin-top: 20px;
+    font-size: 24px;
+}
+#menu-list{
+    margin-top: 5px;
+}
+
+#menu-list li {
+    width: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+#menu-list button {
+    margin: 0;
+    padding: 2px 5px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ff0026;
+    color: white;
+    cursor: pointer;
+}
+</style>
+<body>
+  <div id="app">
+    <h2 id="current-time"></h2>
+    <h3 id="random-result"></h3>
+
+    <div id="add-dish">
+      <input type="text" id="new-dish" placeholder="输入新的菜品">
+      <button id="add-button">新增菜品</button>
+    </div>
+
+    <button id="toggle-list">展开菜单列表</button>
+    
+    <ul id="menu-list" style="display: none">
+      <!--菜单列表-->
+    </ul>
+    <button id="random-dish">今天吃什么？</button>
+  </div>
+  <script>
+    // 菜单列表
+let menuList = localStorage.getItem('menuList') ? JSON.parse(localStorage.getItem('menuList')) : [];
+
+// 显示日期
+document.getElementById('current-time').innerText = dayjs().format('YYYY-MM-DD dddd');
+
+// 切换菜单列表的显示和隐藏
+document.getElementById('toggle-list').addEventListener('click', function() {
+  const menuList = document.getElementById('menu-list');
+  if(menuList.style.display === 'none') {
+    menuList.style.display = 'block';
+    this.innerText = '折叠菜单列表';
+  } else {
+    menuList.style.display = 'none';
+    this.innerText = '展开菜单列表';
+  }
+});
+
+// 添加新的菜品
+document.getElementById('add-button').addEventListener('click', function() {
+  const newDish = document.getElementById('new-dish').value;
+  if(newDish) {
+    addDish(newDish);
+    renderMenuList();
+    document.getElementById('new-dish').value = '';
+  }
+});
+
+// 随机选择
+document.getElementById('random-dish').addEventListener('click', function() {
+  const index = Math.floor(Math.random() * menuList.length);
+  document.getElementById('random-result').innerText = menuList[index];
+});
+
+// 列表操作
+function addDish(dish) {
+  menuList.push(dish);
+  localStorage.setItem('menuList', JSON.stringify(menuList));
+}
+
+function deleteDish(index) {
+  menuList.splice(index, 1);
+  localStorage.setItem('menuList', JSON.stringify(menuList));
+  renderMenuList();
+}
+
+function editDish(index, newDish) {
+  menuList[index] = newDish;
+  localStorage.setItem('menuList', JSON.stringify(menuList));
+  renderMenuList();
+}
+
+// 渲染菜单列表
+function renderMenuList() {
+  const menuListElement = document.getElementById('menu-list');
+  menuListElement.innerHTML = '';
+  menuList.forEach((dish, index) => {
+    const dishElement = document.createElement('li');
+    dishElement.innerHTML = `<span>${dish}</span>`;
+    const deleteButton = document.createElement('button');
+    deleteButton.innerText = '删除';
+    deleteButton.addEventListener('click', function() {
+      deleteDish(index);
+    });
+    dishElement.appendChild(deleteButton);
+    menuListElement.appendChild(dishElement);
+  });
+}
+
+// 页面加载时渲染菜单列表
+window.onload = renderMenuList;
+
+  </script>
+</body>
+</html>
